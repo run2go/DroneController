@@ -7,7 +7,7 @@ float   TAU = 0.3; // Dampening in seconds
 float   TIMER = 1.0; // Time in seconds until auto-off
 float   HEIGHT = 1.5; // Return hover height above the owner in meters
 float   RESETRANGE = 10.0; // Range in meters after which auto return
-integer CHANNEL = 400; // Comms channel for the controller
+integer CHANNEL = 9871; // Comms channel for the controller
 
 // Helper Variables
 integer collisionCounter = 0;
