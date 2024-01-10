@@ -5,15 +5,15 @@
 // Configuration Parameters
 float   RATE = 0.1; // Tick rate for position updates
 float   TIMER = 2.5; // Time in seconds until reset
-float   RANGE = 4096.0; // Detection range, 4096m max
+float   RANGE = 128.0; // Detection range, 4096m max
 float   HEIGHT = 1.5; // Hover height above the owner in meters
 float   DISTANCE = 0.5; // Distance between the drones for conducting
 float   ROTATING = 2.0; // Rotation increments in degrees per tick
-integer CHANNEL = 400; // Gesture & comms channel for the drones
+integer CHANNEL = 9871; // Gesture & comms channel for the drones
 
-vector GetRestPos()         { return llGetPos() + <0, 0, HEIGHT>; }
-vector GetAgentPos(key id)  { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
-TrackPos(vector pos) { llRegionSay(CHANNEL, (string)pos); }
+vector GetRestPos()        { return llGetPos() + <0, 0, HEIGHT>; }
+vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
+TrackPos(vector pos)       { llRegionSay(CHANNEL, (string)pos); }
 
 key kAgent;
 vector vTarget;
@@ -67,7 +67,8 @@ DroneConduct() {
     } else TrackPos(restTarget); // Else move all drones to the same spot
     llSetText("[Holding]\nDrones: " + (string)nActiveDrones, <1,1,1>, 0.7);
 }
-DronePoly(integer bSwitch) {
+
+DronePolyToggle(integer bSwitch) {
     DroneCheck();
     bPolygon = bSwitch;
 }
@@ -130,10 +131,10 @@ NavButton(integer n) {
     
     if (linkNum == 0) { // HUD Button
         if      (cellIndex == 0) DroneToggle(bActive = !bActive);
-        else if (cellIndex == 1) DronePoly(bPolygon = !bPolygon);
+        else if (cellIndex == 1) DronePolyToggle(bPolygon = !bPolygon);
         else if (cellIndex == 2) DroneCreate();
         else if (cellIndex == 3) DroneDie();
-    } else llOwnerSay((string)linkNum); // Placeholder
+    } //else llOwnerSay((string)linkNum); // Placeholder
 }
 default {
     touch_start(integer n)  { if (llDetectedKey(0) == llGetOwner()) NavButton(n); }
