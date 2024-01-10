@@ -1,5 +1,6 @@
 # DroneController
-Object Controller using LSL
+Object Controller using LSL with RayCasting to determine Target Vectors.
+Allows a rotating polygon resting pattern that dynamically adapts to the amount of Drones rezzed in the world.
 
 
 ## Setup
@@ -13,11 +14,30 @@ Object Controller using LSL
 | 6 | Attach & wear the HUD object |
 
 
+Create a gesture to toggle on & off the DroneController.
+- Add chat entry: `/9871 toggle`
+- Keybind: `SHIFT + SPACE`
+
+Add a second gesture to detect an agent/target for the Drones.
+- Add chat entry: `/9871 trigger` 
+- Keybind: `CTRL + SPACE`
+
 ## Usage
-Create a gesture that sends `/9871 toggle` when to toggle on & off the DroneController.
+Enable the DroneController via your gesture hotkey to boot it up.
+Use your camera/mouselook and aim at your desired target, followed by activation of the detect gesture.
 
-Add a second gesture that sends `/9871 trigger` to detect a target for the Drones.
+The HUD will display the current target position (vector) or object/agent name if possible while in tracking mode.
 
+Configuration Parameter names and their default values:
+```py
+RATE     0.1 # Tick rate for position updates
+TIMER    2.5 # Time in seconds until reset
+RANGE  128.0 # Detection range, 4096m max
+HEIGHT   1.5 # Hover height above the owner in meters
+DISTANCE 0.5 # Distance between the drones for polygon resting
+ROTATING 2.0 # Rotation increments in degrees per tick (set to 0 to disable)
+CHANNEL 9871 # Gesture & comms channel for the drones
+```
 
 ## License
 MIT
