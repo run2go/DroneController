@@ -110,7 +110,6 @@ DroneCheck() {
 }
 
 DroneCreate() {
-    DroneCheck();
     llRezObject(llGetInventoryName(INVENTORY_OBJECT, 0), GetRestPos(), ZERO_VECTOR, ZERO_ROTATION, 0);
 }
 
