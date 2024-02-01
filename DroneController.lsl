@@ -43,7 +43,7 @@ integer bPolygon = FALSE;
 float rotIncrement = 0;
 DroneConduct() {
     vector restTarget = GetRestPos();
-    if (bPolygon && nActiveDrones != 1) { // Polygon mode if more than 1 active drones
+    if (bPolygon && nActiveDrones > 1) { // Polygon mode if more than 1 active drones
         integer i;
         rotIncrement += ROTATING; // Increment rotation globally
         for (i = 0; i <= nActiveDrones; i++) {
@@ -65,7 +65,8 @@ DroneConduct() {
             if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
         } if (rotIncrement >= 360.0) rotIncrement -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
     } else TrackPos(restTarget); // Else move all drones to the same spot
-    llSetText("[Holding]\nDrones: " + (string)nActiveDrones, <1,1,1>, 0.7);
+    if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nActiveDrones, <1.0,0.8,1.0>, 0.7);
+    else llSetText("[Rest]\nDrones: " + (string)nActiveDrones, <1.0,1.0,0.8>, 0.7);
 }
 
 DronePolyToggle(integer bSwitch) {
@@ -114,8 +115,9 @@ DroneCreate() {
 }
 
 DroneDie() {
-    DroneToggle(bActive = FALSE);
+    bPolygon = FALSE;
     llRegionSay(CHANNEL, "dDie");
+    DroneCheck();
 }
 
 integer numberOfRows    = 1;
