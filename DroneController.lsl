@@ -62,7 +62,7 @@ DroneConduct() {
             droneTarget.y += yOffset;
             
             // Send the updated position to the corresponding drone
-            if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
+            llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
         } if (rotIncrement >= 360.0) rotIncrement -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
     } else TrackPos(restTarget); // Else move all drones to the same spot
     if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nActiveDrones, <1.0,0.8,1.0>, 0.7);
