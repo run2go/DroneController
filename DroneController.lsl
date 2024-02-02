@@ -3,12 +3,13 @@
 // License: MIT
 
 // Configuration Parameters
-float   RATE = 0.1; // Tick rate for position updates
-float   TIMER = 2.5; // Time in seconds until reset
-float   RANGE = 128.0; // Detection range, 4096m max
-float   HEIGHT = 1.5; // Hover height above the owner in meters
-float   DISTANCE = 0.5; // Distance between the drones for conducting
-float   ROTATING = 2.0; // Rotation increments in degrees per tick
+float   RATE = 0.1;     // Tick rate for position updates
+float   CHECK = 5.0;    // Health check interval for arDrones
+float   TIMER = 2.5;    // Time in seconds until reset
+float   RANGE = 128.0;  // Detection range, 4096m max
+float   HEIGHT = 1.5;   // Hover height above the owner in meters
+float   DISTANCE = 0.2; // Distance between the drones for conducting
+float   ROTATING = 3.0; // Rotation increments in degrees per tick
 integer CHANNEL = 9871; // Gesture & comms channel for the drones
 
 vector GetRestPos()        { return llGetPos() + <0, 0, HEIGHT>; }
@@ -17,24 +18,24 @@ TrackPos(vector pos)       { llRegionSay(CHANNEL, (string)pos); }
 
 key kAgent;
 vector vTarget;
-TargetReset() {
+TargetClear() {
     kAgent = NULL_KEY;
     vTarget = ZERO_VECTOR;
 }
-RayCast() {
-    TargetReset();
+DroneTarget() {
+    TargetClear();
     llRequestPermissions(llGetOwner(), 0x400); // Track Camera permissions
-    vector start = llGetCameraPos();
-    vector end = start + <RANGE, 0.0, 0.0> * llGetCameraRot();
-    list data = llCastRay(start, end, []);
+    vector vStart = llGetCameraPos();
+    vector vEnd = vStart + <RANGE, 0.0, 0.0> * llGetCameraRot();
+    list data = llCastRay(vStart, vEnd, []);
     
     if (llGetListLength(data) > 1) { // Check if an object was hit
         kAgent = llList2Key(data, 0);
         vTarget = llList2Vector(data, 1);  // Else use target position
         if (llKey2Name(llList2Key(data, 0)) != "") llSetText("[Track]\n " + llKey2Name(kAgent), <0.3,1,0.5>, 1.0);
         else llSetText("[Track]\n " + (string)vTarget, <0.8,1,0.3>, 1.0);
-        nTicks = 0;
-        llSetTimerEvent(RATE);
+        nTick = 0;
+        bChase = TRUE;
     }
 }
 
@@ -43,77 +44,65 @@ DroneRegister(key droneKey) { // Add the new key to arDrones
     if (llListFindList(arDrones, [droneKey]) == -1) arDrones += [droneKey];
 }
 
-integer nActiveDrones = 0;
+integer nDrones = 0;
 integer bPolygon = FALSE;
-float rotIncrement = 0;
+float fRotation = 0;
 DroneConduct() {
-    vector restTarget = GetRestPos();
-    if (bPolygon && nActiveDrones > 1) { // Polygon mode if more than 1 active drones
+    vector vResting = GetRestPos();
+    if (bPolygon && nDrones > 1) { // Polygon mode if more than 1 active drones
         integer i;
-        rotIncrement += ROTATING; // Increment rotation globally
-        for (i = 0; i <= nActiveDrones; i++) {
-            vector droneTarget = restTarget;
-            float dynamicDistance = DISTANCE * llSqrt(nActiveDrones); // Dynamically adjust the distance
+        fRotation += ROTATING; // Increment rotation globally
+        for (i = 0; i <= nDrones; i++) {
+            vector vDrone = vResting;
+            float fDistance = DISTANCE * nDrones; // Dynamically adjust the distance
             
             // Calculate the angle
-            float angle = TWO_PI * i / nActiveDrones + rotIncrement * DEG_TO_RAD;
+            float fAngle = TWO_PI * i / nDrones + fRotation * DEG_TO_RAD;
 
-            // Calculate the offset
-            float xOffset = dynamicDistance * llCos(angle);
-            float yOffset = dynamicDistance * llSin(angle);
-            
-            // Update drone position
-            droneTarget.x += xOffset;
-            droneTarget.y += yOffset;
+            // Update drone position with the offset
+            vDrone.x += fDistance * llCos(fAngle);
+            vDrone.y += fDistance * llSin(fAngle);
             
             // Send the updated position to the corresponding drone
-            if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
-        } if (rotIncrement >= 360.0) rotIncrement -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
-    } else TrackPos(restTarget); // Else move all drones to the same spot
-    if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nActiveDrones, <1.0,0.8,1.0>, 0.7);
-    else llSetText("[Rest]\nDrones: " + (string)nActiveDrones, <1.0,1.0,0.8>, 0.7);
+            if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)vDrone);
+        } if (fRotation >= 360.0) fRotation -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
+    } else TrackPos(vResting); // Else move all drones to the same spot
+    if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nDrones, <1.0,0.8,1.0>, 0.7);
+    else llSetText("[Rest]\nDrones: " + (string)nDrones, <1.0,1.0,0.8>, 0.7);
 }
 
-DronePolyToggle(integer bSwitch) {
-    DroneCheck();
-    bPolygon = bSwitch;
-}
-
-integer nTicksTotal;
-integer nTicks;
-integer nCheckTick = 0;
+integer bChase = FALSE;
+integer nTick = 100;
 DroneMode() {
-    nActiveDrones = llGetListLength(arDrones);
-    integer bChasing = nTicks < nTicksTotal;
-    if (bChasing) { // Chasing
-        nTicks++;
+    nDrones = llGetListLength(arDrones);
+    if (bChase) { // Chasing
         if (kAgent != NULL_KEY) TrackPos(GetAgentPos(kAgent));
         else if (vTarget != ZERO_VECTOR) TrackPos(vTarget);
-        nCheckTick = 0;
-    } else { // Idling
-        DroneConduct();
-        nCheckTick++;
-    } if (!bChasing && nCheckTick > 50) DroneCheck();
+    } else DroneConduct(); // Idling
+    if (nTick > (integer)(TIMER / RATE)) bChase = FALSE;
+    if (nTick > (integer)(CHECK / RATE) && !bChase) DroneCheck();
+    nTick++;
 }
 
 integer bActive = FALSE;
 DroneToggle(integer bSwitch) {
     if (bSwitch) { // Turn on
-        TargetReset();
         DroneCheck();
+        bChase = FALSE;
         llSetTimerEvent(RATE);
     } else { // Turn off
         llSetTimerEvent(0);
         llSetText("[~]", <1,1,1>, 0.5);
         llRegionSay(CHANNEL, "dStop");
         arDrones = [];
+        TargetClear();
     }
 }
 
 DroneCheck() {
-    arDrones = [];
-    nCheckTick = 0;
     llRegionSay(CHANNEL, "dCheck");
+    arDrones = [];
+    nTick = 0;
 }
 
 DroneCreate() {
@@ -121,43 +110,40 @@ DroneCreate() {
 }
 
 DroneDie() {
-    bPolygon = FALSE;
     llRegionSay(CHANNEL, "dDie");
     DroneCheck();
 }
 
-integer numberOfRows    = 1;
-integer numberOfColumns = 4;
+integer nColumns = 4;
+integer nRows    = 1;
 NavButton(integer n) {
-    integer linkNum     = llDetectedLinkNumber(0);
-    vector  touchST     = llDetectedTouchST(0);
-
-    integer columnIndex = (integer)(touchST.x * numberOfColumns);
-    integer rowIndex    = (integer)(touchST.y * numberOfRows);
-    integer cellIndex   = (rowIndex * numberOfColumns) + columnIndex;
+    integer nLink   = llDetectedLinkNumber(0);
+    vector  vTouch  = llDetectedTouchST(0);
+    integer nColumn = (integer)(vTouch.x * nColumns);
+    integer nRow    = (integer)(vTouch.y * nRows);
+    integer nCell   = (nRow * nColumns) + nColumn;
     
-    if (linkNum == 0) { // HUD Button
-        if      (cellIndex == 0) DroneToggle(bActive = !bActive);
-        else if (cellIndex == 1) DronePolyToggle(bPolygon = !bPolygon);
-        else if (cellIndex == 2) DroneCreate();
-        else if (cellIndex == 3) DroneDie();
-    } //else llOwnerSay((string)linkNum); // Placeholder
+    if (nLink == 0) { // HUD Face 0
+        if      (nCell == 0) DroneToggle(bActive = !bActive);
+        else if (nCell == 1) bPolygon = !bPolygon;
+        else if (nCell == 2) DroneCreate();
+        else if (nCell == 3) DroneDie();
+    }
 }
 default {
-    touch_start(integer n)  { if (llDetectedKey(0) == llGetOwner()) NavButton(n); }
-    attach(key id)          { llResetScript(); }
-    timer()                 { DroneMode(); }
+    touch_start(integer n) { if (llDetectedKey(0) == llGetOwner()) NavButton(n); }
+    attach(key id)         { llResetScript(); }
+    timer()                { DroneMode(); }
     state_entry() {
         llListen(CHANNEL, "", "", "");
         llSetText("[~]", <1,1,1>, 0.5);
-        nTicksTotal = nTicks = (integer)(TIMER / RATE);
     }
     listen(integer c, string n, key id, string m) {
         if (llGetOwnerKey(id) == llGetOwner()) {
             if      (m == "toggle") DroneToggle(bActive = !bActive);
-            else if (m == "trigger" && bActive) RayCast();
+            else if (m == "trigger" && bActive) DroneTarget();
             else if (m == "dDie") DroneDie();
-            else if (m != NULL_KEY) DroneRegister((key)m);
+            else if ((key)m != NULL_KEY) DroneRegister((key)m);
         }
     }
 }
