@@ -17,7 +17,12 @@ TrackPos(vector pos)       { llRegionSay(CHANNEL, (string)pos); }
 
 key kAgent;
 vector vTarget;
+TargetReset() {
+    kAgent = NULL_KEY;
+    vTarget = ZERO_VECTOR;
+}
 RayCast() {
+    TargetReset();
     llRequestPermissions(llGetOwner(), 0x400); // Track Camera permissions
     vector start = llGetCameraPos();
     vector end = start + <RANGE, 0.0, 0.0> * llGetCameraRot();
@@ -62,7 +67,7 @@ DroneConduct() {
             droneTarget.y += yOffset;
             
             // Send the updated position to the corresponding drone
-            llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
+            if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)droneTarget);
         } if (rotIncrement >= 360.0) rotIncrement -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
     } else TrackPos(restTarget); // Else move all drones to the same spot
     if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nActiveDrones, <1.0,0.8,1.0>, 0.7);
@@ -94,6 +99,7 @@ DroneMode() {
 integer bActive = FALSE;
 DroneToggle(integer bSwitch) {
     if (bSwitch) { // Turn on
+        TargetReset();
         DroneCheck();
         llSetTimerEvent(RATE);
     } else { // Turn off
