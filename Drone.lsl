@@ -22,7 +22,6 @@ DroneStop() {
     llStopMoveToTarget();
 }
 DroneCheck() {
-    llRegionSay(CHANNEL, (string)llGetKey());
     vector dronePos = llGetPos();
     vector ownerPos = GetAgentPos(llGetOwner());
     if (llVecDist(dronePos, ownerPos) > RESETRANGE || dronePos.z < ownerPos.z - 0.1 || dronePos.z > ownerPos.z + HEIGHT + 0.1) {
@@ -30,6 +29,7 @@ DroneCheck() {
         llSetRegionPos(ownerPos + <0, 0, HEIGHT>);
         llSetStatus(STATUS_PHYSICS, TRUE);
     }
+    llRegionSay(CHANNEL, (string)llGetKey());
 }
 
 default {
