@@ -6,7 +6,7 @@
 float   TAU = 0.3; // Dampening in seconds
 float   TIMER = 1.0; // Time in seconds until auto-off
 float   HEIGHT = 1.5; // Return hover height above the owner in meters
-float   RESETRANGE = 10.0; // Range in meters after which auto return
+float   LIMIT = 10.0; // Max range in meters until auto return
 integer CHANNEL = 9871; // Comms channel for the controller
 
 vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
@@ -19,20 +19,23 @@ DroneStop() {
     llStopMoveToTarget();
 }
 DroneCheck() {
-    vector dronePos = llGetPos();
-    vector ownerPos = GetAgentPos(llGetOwner());
-    if (llVecDist(dronePos, ownerPos) > RESETRANGE || dronePos.z < ownerPos.z - 0.1 || dronePos.z > ownerPos.z + HEIGHT + 0.1) {
+    llRegionSay(CHANNEL, (string)llGetKey());
+    vector vDrone = llGetPos();
+    vector vOwner = GetAgentPos(llGetOwner());
+    if (llVecDist(vDrone, vOwner) > LIMIT || vDrone.z < vOwner.z - 0.5 || vDrone.z > vOwner.z + HEIGHT + 0.5) {
         llSetStatus(STATUS_PHYSICS, FALSE);
-        llSetRegionPos(ownerPos + <0, 0, HEIGHT>);
+        llSetRegionPos(vOwner + <0, 0, HEIGHT>);
         llSetStatus(STATUS_PHYSICS, TRUE);
     }
+}
+DroneRegister() {
     llRegionSay(CHANNEL, (string)llGetKey());
 }
 
 default {
     on_rez(integer n) { llResetScript(); }
     timer()           { DroneStop(); }
-    state_entry()     {
+    state_entry() {
         llListen(CHANNEL, "", "", "");
         llRegionSay(CHANNEL, (string)llGetKey());
         llSetStatus(STATUS_PHYSICS | STATUS_DIE_AT_EDGE | STATUS_DIE_AT_NO_ENTRY, TRUE);
@@ -41,9 +44,10 @@ default {
     listen(integer c, string n, key id, string m) {
         if (llGetOwnerKey(id) == llGetOwner()) {
             if ((vector)m != ZERO_VECTOR) DroneChase((vector)m);
-            else if (m == "dStop") DroneStop();
-            else if (m == "dCheck") { DroneCheck(); }
-            else if (m == "dDie") { llDie(); }
+            else if (m == "dStop")  DroneStop();
+            else if (m == "dCheck") DroneCheck();
+            else if (m == "dReg")   DroneRegister();
+            else if (m == "dDie")   llDie();
         }
     }
 }
