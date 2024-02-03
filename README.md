@@ -31,11 +31,12 @@ The HUD will display the current target position (vector) or object/agent name i
 Configuration Parameter names and their default values:
 ```py
 RATE     0.1 # Tick rate for position updates
+CHECK    5.0 # Health check interval for drone status
 TIMER    2.5 # Time in seconds until reset
 RANGE  128.0 # Detection range, 4096m max
 HEIGHT   1.5 # Hover height above the owner in meters
-DISTANCE 0.5 # Distance between the drones for polygon resting
-ROTATING 2.0 # Rotation increments in degrees per tick (set to 0 to disable)
+DISTANCE 0.2 # Distance between the drones for polygon resting
+ROTATING 3.0 # Rotation increments in degrees per tick (set to 0 to disable)
 CHANNEL 9871 # Gesture & comms channel for the drones
 ```
 
