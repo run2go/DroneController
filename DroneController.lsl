@@ -55,16 +55,11 @@ DroneConduct() {
         for (i = 0; i <= nDrones; i++) {
             vector vDrone = vResting;
             float fDistance = DISTANCE * nDrones; // Dynamically adjust the distance
-            
-            // Calculate the angle
-            float fAngle = TWO_PI * i / nDrones + fRotation * DEG_TO_RAD;
-
-            // Update drone position with the offset
-            vDrone.x += fDistance * llCos(fAngle);
+            float fAngle = TWO_PI * i / nDrones + fRotation * DEG_TO_RAD; // Calculate the angle
+            vDrone.x += fDistance * llCos(fAngle); // Update drone position with the offset
             vDrone.y += fDistance * llSin(fAngle);
             
-            // Send the updated position to the corresponding drone
-            if (llList2Key(arDrones, i) != NULL_KEY) llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)vDrone);
+            llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)vDrone); // Send newvector to the drone
         } if (fRotation >= 360.0) fRotation -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
     } else TrackPos(vResting); // Else move all drones to the same spot
     if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nDrones, <1.0,0.8,1.0>, 0.7);
