@@ -9,9 +9,6 @@ float   HEIGHT = 1.5; // Return hover height above the owner in meters
 float   RESETRANGE = 10.0; // Range in meters after which auto return
 integer CHANNEL = 9871; // Comms channel for the controller
 
-// Helper Variables
-integer collisionCounter = 0;
-
 vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
 DroneChase(vector targetPos) {
     llMoveToTarget(targetPos, TAU);
