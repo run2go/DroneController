@@ -1,9 +1,8 @@
 ![HUD](DroneControllerHUD.png)
 
 # DroneController
-Object Controller using LSL with RayCasting to determine Target Vectors.
+Object Controller using LSL with RayCasting to determine Target Vectors.<br>
 Allows a rotating polygon resting pattern that dynamically adapts to the amount of Drones rezzed in the world.
-
 
 ## Setup
 | Step | Description |
@@ -16,7 +15,6 @@ Allows a rotating polygon resting pattern that dynamically adapts to the amount 
 | 5 | Copy the Drone object into the HUD |
 | 6 | Attach & wear the HUD object |
 
-
 Create a gesture to toggle on & off the DroneController.
 - Add chat entry: `/9871 toggle`
 - Keybind: `SHIFT + SPACE`
@@ -26,12 +24,21 @@ Add a second gesture to detect an agent/target for the Drones.
 - Keybind: `CTRL + SPACE`
 
 ## Usage
-Enable the DroneController via your gesture hotkey to boot it up.
+Enable the DroneController via your gesture hotkey to boot it up.<br>
 Use your camera/mouselook and aim at your desired target, followed by activation of the detect gesture.
 
-The HUD will display the current target position (vector) or object/agent name if possible while in tracking mode.
+The HUD hovertext will display the current target position (vector) or object/agent name if possible while in tracking mode.<br>
+As for the buttons on the HUD itself, they have the following functions:
+- On/Off Toggle
+- Switch between default & polygon mode
+- Add (Rez) drone
+- Remove last drone
+- Purge all drones in the simulator
 
-Configuration Parameter names and their default values:
+The "Rotation" and "Distance" sections ontop are both sliders.<br>
+Left to right equals 0-100% of the ROTATING & DISTANCE params respectively.
+
+## Configuration Parameters
 ```py
 RATE     0.1 # Tick rate for position updates
 CHECK    5.0 # Health check interval for drone status
