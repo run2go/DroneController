@@ -7,7 +7,9 @@ float   TAU = 0.3; // Dampening in seconds
 float   TIMER = 1.0; // Time in seconds until auto-off
 float   HEIGHT = 1.5; // Return hover height above the owner in meters
 float   LIMIT = 10.0; // Max range in meters until auto return
-integer CHANNEL = 9871; // Comms channel for the controller
+
+// Helper Variables
+integer dynChannel;
 
 vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
 DroneChase(vector targetPos) {
@@ -19,7 +21,7 @@ DroneStop() {
     llStopMoveToTarget();
 }
 DroneCheck() {
-    llRegionSay(CHANNEL, (string)llGetKey());
+    llRegionSay(dynChannel, (string)llGetKey());
     vector vDrone = llGetPos();
     vector vOwner = GetAgentPos(llGetOwner());
     if (llVecDist(vDrone, vOwner) > LIMIT || vDrone.z < vOwner.z - 0.5 || vDrone.z > vOwner.z + HEIGHT + 0.5) {
@@ -29,15 +31,16 @@ DroneCheck() {
     }
 }
 DroneRegister() {
-    llRegionSay(CHANNEL, (string)llGetKey());
+    llRegionSay(dynChannel, (string)llGetKey());
 }
 
 default {
     on_rez(integer n) { llResetScript(); }
     timer()           { DroneStop(); }
     state_entry() {
-        llListen(CHANNEL, "", "", "");
-        llRegionSay(CHANNEL, (string)llGetKey());
+        dynChannel = (integer)("0x" + llGetSubString(llGetOwner(), 0, 7));
+        llListen(dynChannel, "", "", "");
+        llRegionSay(dynChannel, (string)llGetKey());
         llSetStatus(STATUS_PHYSICS | STATUS_DIE_AT_EDGE | STATUS_DIE_AT_NO_ENTRY, TRUE);
         llCollisionSound(NULL_KEY, 0.0);
     }
