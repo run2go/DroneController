@@ -1,13 +1,12 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.3.0
+// Version: 1.3.1
 
 // Configuration Parameters
 float   RATE     = 0.1;  // Tick rate for position updates
 float   CHECK    = 5.0;  // Health check interval for arDrones
 float   TIMER    = 2.5;  // Time in seconds until reset
-float   FADE     = 1.0;  // Fade time for HUD displays
 float   RANGE    = 128;  // Detection range, 4096m max
 float   HEIGHT   = 1.5;  // Hover height above the owner in meters
 float   DISTANCE = 0.2;  // Distance between the drones for conducting
