@@ -3,22 +3,22 @@
 // License: MIT
 
 // Configuration Parameters
-float   RATE = 0.1;     // Tick rate for position updates
-float   CHECK = 5.0;    // Health check interval for arDrones
-float   TIMER = 2.5;    // Time in seconds until reset
-float   RANGE = 128.0;  // Detection range, 4096m max
-float   HEIGHT = 1.5;   // Hover height above the owner in meters
-float   DISTANCE = 0.2; // Distance between the drones for conducting
-float   ROTATING = 3.0; // Rotation increments in degrees per tick
-integer CHANNEL = 9871; // Gesture & comms channel for the drones
+float   RATE     = 0.1;   // Tick rate for position updates
+float   CHECK    = 5.0;   // Health check interval for arDrones
+float   TIMER    = 2.5;   // Time in seconds until reset
+float   RANGE    = 128.0; // Detection range, 4096m max
+float   HEIGHT   = 1.5;   // Hover height above the owner in meters
+float   DISTANCE = 0.2;   // Distance between the drones for conducting
+float   ROTATING = 3.0;   // Rotation increments in degrees per tick
 
 // Helper Variables
-float   fTempDist = DISTANCE;
-float   fTempRot  = ROTATING;
+float   fTempDist  = DISTANCE;
+float   fTempRot   = ROTATING;
+integer dynChannel;
 
 vector GetRestPos()        { return llGetPos() + <0, 0, HEIGHT>; }
 vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
-TrackPos(vector pos)       { llRegionSay(CHANNEL, (string)pos); }
+TrackPos(vector pos)       { llRegionSay(dynChannel, (string)pos); }
 
 key kAgent;
 vector vTarget;
@@ -49,9 +49,9 @@ DroneRegister(key droneKey) { // Add the new key to arDrones
 }
 DroneCheck(integer bFull) {
     if (bFull) {
-        llRegionSay(CHANNEL, "dCheck");
+        llRegionSay(dynChannel, "dCheck");
         nTick = 0;
-    } else llRegionSay(CHANNEL, "dReg");
+    } else llRegionSay(dynChannel, "dReg");
     arDrones = [];
 }
 
@@ -75,7 +75,7 @@ DroneConduct() {
             vDrone.y += fDistance * llSin(fAngle);
             
             // Send the updated position to the corresponding drone
-            llRegionSayTo(llList2Key(arDrones, i), CHANNEL, (string)vDrone);
+            llRegionSayTo(llList2Key(arDrones, i), dynChannel, (string)vDrone);
         } if (fRotation >= 360.0) fRotation -= 360.0; // Adjust rotation to keep it within [0, 360) degrees
     } else TrackPos(vResting); // Else move all drones to the same spot
     if (bPolygon) llSetText("[Poly]\nDrones: " + (string)nDrones, <1.0,0.8,1.0>, 0.7);
@@ -109,7 +109,7 @@ DroneToggle(integer bSwitch) {
     } else { // Turn off
         llSetTimerEvent(0);
         llSetText("[~]", <1,1,1>, 0.5);
-        llRegionSay(CHANNEL, "dStop");
+        llRegionSay(dynChannel, "dStop");
         arDrones = [];
         TargetClear();
     }
@@ -120,12 +120,12 @@ DroneCreate() {
 }
 
 DroneDelete() {
-    llRegionSayTo(llList2Key(arDrones, nDrones-1), CHANNEL, "dDie");
+    llRegionSayTo(llList2Key(arDrones, nDrones-1), dynChannel, "dDie");
     DroneCheck(FALSE);
 }
 
 DroneDie() {
-    llRegionSay(CHANNEL, "dDie");
+    llRegionSay(dynChannel, "dDie");
     DroneCheck(TRUE);
 }
 integer NavHelper(integer nColumns, integer nRows, vector vTouch) {
@@ -156,7 +156,8 @@ default {
     attach(key id)         { llResetScript(); }
     timer()                { DroneMode(); }
     state_entry() {
-        llListen(CHANNEL, "", "", "");
+        dynChannel = (integer)("0x" + llGetSubString(llGetOwner(), 0, 7));
+        llListen(dynChannel, "", "", "");
         llSetText("[~]", <1,1,1>, 0.5);
     }
     listen(integer c, string n, key id, string m) {
