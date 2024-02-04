@@ -1,7 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.3.1
+// Version: 1.3.2
 
 // Configuration Parameters
 float   RATE     = 0.1;  // Tick rate for position updates
@@ -130,33 +130,30 @@ DronePurge() {
 integer bShowCounter = 0;
 HoverTextHelper() {
     if (bShowCounter > (TIMER / RATE)) {
-        stRowExtra = " ";
+        stRowStatus = " ";
         bShowCounter = 0;
     } else bShowCounter++;
 }
 vector vColor = <1.0, 1.0, 1.0>;
-string stRowExtra = " ";
+string stRowStatus = " ";
 HoverText(integer nMode, string stText) {
     float  fAlpha = 1.0;
     string stRow1 = " ";
-    string stRow2 = "Zzz";
-    string stRow3 = "[Drones] " + (string)nDrones;
+    string stRow2 = "[Drones] " + (string)nDrones;
     string br = "\n";
     
-    if      (nMode == 0) stRow1 = "~";
+    if (nMode == 0) stRow1 = "💤";
     else if (nMode == 1) {
-        stRow1 = "♥";
-        if (bPoly) stRow2 = "[State] Polygon";
-        else       stRow2 = "[State] Default";
+        if (bPoly) stRow1 = "[State] Polygon";
+        else       stRow1 = "[State] Default";
     } else if (nMode == 2) {
-        stRow1 = "Tracking";
-        stRow2 = "[Target] " + stText;
+        stRow1 = "[Target] " + stText;
     }
-    string stHover = stRow1 +br+ stRow2 +br+ stRow3 +br+ stRowExtra;
+    string stHover = stRow1 +br+ stRow2 +br+ stRowStatus;
     llSetText(stHover, vColor, fAlpha);
 }
 
-string ControllerStatus(integer bool) { if (bool) return "On"; else return "Off"; }
+string StatusHUD(integer bool) { if (bool) return "On"; else return "Off"; }
 integer NavHelper(integer nCols, integer nRows, vector vTouch) {
     integer nCol = (integer)(vTouch.x * nCols);
     integer nRow = (integer)(vTouch.y * nRows);
@@ -168,15 +165,15 @@ NavButton(integer n) {
     integer bButton = (vTouch.y <= 0.75); // Is touch on button
     if (nLink == 0 && bButton) {
         integer nCell = NavHelper(5, 1, vTouch);
-        if      (nCell == 0) { stRowExtra = "> Controller " + (string)ControllerStatus(bActive = !bActive) + " <"; }
-        else if (nCell == 1) { stRowExtra = "> Mode Changed <"; DronePolyToggle(); }
-        else if (nCell == 2) { stRowExtra = "> Drone Created <"; DroneCreate(); }
-        else if (nCell == 3) { stRowExtra = "> Drone Deleted <"; DroneDelete(); }
-        else if (nCell == 4) { stRowExtra = "> Drones Purged <"; DronePurge(); }
+        if      (nCell == 0) { stRowStatus = "> Controller " + (string)StatusHUD(bActive = !bActive) + " <"; }
+        else if (nCell == 1) { stRowStatus = "> Mode Changed <"; DronePolyToggle(); }
+        else if (nCell == 2) { stRowStatus = "> Drone Created <"; DroneCreate(); }
+        else if (nCell == 3) { stRowStatus = "> Drone Deleted <"; DroneDelete(); }
+        else if (nCell == 4) { stRowStatus = "> Drones Purged <"; DronePurge(); }
     } else if (nLink == 0) {
         integer nCell = NavHelper(2, 1, vTouch);
-        if      (nCell == 0) { stRowExtra = "> Rotation @"+(string)(fRot  = (vTouch.x - 0.0) / 0.5 * 25.0)+"% <"; }
-        else if (nCell == 1) { stRowExtra = "> Distance @"+(string)(fDist = (vTouch.x - 0.5) / 0.5 *  1.0)+"% <"; }
+        if      (nCell == 0) { stRowStatus = "> Rotation @"+(string)(fRot  = (vTouch.x - 0.0) / 0.5 * 25.0)+"% <"; }
+        else if (nCell == 1) { stRowStatus = "> Distance @"+(string)(fDist = (vTouch.x - 0.5) / 0.5 *  1.0)+"% <"; }
     } bShowCounter = 1; // Start counter
 }
 default { 
@@ -194,8 +191,11 @@ default {
     listen(integer c, string n, key id, string m) {
         if (llGetOwnerKey(id) == llGetOwner()) {
             if      (c == dynChannel && (key)m != NULL_KEY) DroneRegister((key)m);
-            else if (c == CHANNEL && m == "toggle") bActive = !bActive;
             else if (c == CHANNEL && m == "trigger" && bActive) DroneTarget();
+            else if (c == CHANNEL && m == "toggle") {
+                stRowStatus = "> Controller " + (string)StatusHUD(bActive = !bActive) + " <";
+                bShowCounter = 1;
+            }
         }
     }
 }
