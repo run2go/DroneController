@@ -10,6 +10,7 @@ float   RANGE    = 128.0; // Detection range, 4096m max
 float   HEIGHT   = 1.5;   // Hover height above the owner in meters
 float   DISTANCE = 0.2;   // Distance between the drones for conducting
 float   ROTATING = 3.0;   // Rotation increments in degrees per tick
+integer CHANNEL  = 9871;  // Channel for the gestures commands
 
 // Helper Variables
 float   fTempDist  = DISTANCE;
@@ -158,14 +159,15 @@ default {
     state_entry() {
         dynChannel = (integer)("0x" + llGetSubString(llGetOwner(), 0, 7));
         llListen(dynChannel, "", "", "");
+        llListen(CHANNEL, "", "", "");
         llSetText("[~]", <1,1,1>, 0.5);
     }
     listen(integer c, string n, key id, string m) {
         if (llGetOwnerKey(id) == llGetOwner()) {
-            if      (m == "toggle") DroneToggle(bActive = !bActive);
-            else if (m == "trigger" && bActive) DroneTarget();
-            else if (m == "dDie") DroneDie();
-            else if ((key)m != NULL_KEY) DroneRegister((key)m);
+            if (c == dynChannel && m == "dDie") DroneDie();
+            else if (c == dynChannel && (key)m != NULL_KEY) DroneRegister((key)m);
+            else if (c == CHANNEL && m == "toggle") DroneToggle(bActive = !bActive);
+            else if (c == CHANNEL && m == "trigger" && bActive) DroneTarget();
         }
     }
 }
