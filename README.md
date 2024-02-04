@@ -47,7 +47,7 @@ RANGE  128.0 # Detection range, 4096m max
 HEIGHT   1.5 # Hover height above the owner in meters
 DISTANCE 0.2 # Distance between the drones for polygon resting
 ROTATING 3.0 # Rotation increments in degrees per tick (set to 0 to disable)
-CHANNEL 9871 # Gesture & comms channel for the drones
+CHANNEL 9871 # Gesture channel for the controller
 ```
 
 ## License
