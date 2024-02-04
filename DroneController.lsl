@@ -1,7 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.2
+// Version: 1.2.1
 
 // Configuration Parameters
 float   RATE     = 0.1;   // Tick rate for position updates
@@ -130,6 +130,7 @@ DroneDie() {
     llRegionSay(dynChannel, "dDie");
     DroneCheck(TRUE);
 }
+
 integer NavHelper(integer nColumns, integer nRows, vector vTouch) {
     integer nColumn = (integer)(vTouch.x * nColumns);
     integer nRow    = (integer)(vTouch.y * nRows);
@@ -165,8 +166,7 @@ default {
     }
     listen(integer c, string n, key id, string m) {
         if (llGetOwnerKey(id) == llGetOwner()) {
-            if (c == dynChannel && m == "dDie") DroneDie();
-            else if (c == dynChannel && (key)m != NULL_KEY) DroneRegister((key)m);
+            if      (c == dynChannel && (key)m != NULL_KEY) DroneRegister((key)m);
             else if (c == CHANNEL && m == "toggle") DroneToggle(bActive = !bActive);
             else if (c == CHANNEL && m == "trigger" && bActive) DroneTarget();
         }
