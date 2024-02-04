@@ -1,6 +1,7 @@
 // Drone.lsl
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
+// Version: 1.1
 
 // Configuration Parameters
 float   TAU = 0.3; // Dampening in seconds
