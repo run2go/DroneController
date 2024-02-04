@@ -1,6 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
+// Version: 1.2
 
 // Configuration Parameters
 float   RATE     = 0.1;   // Tick rate for position updates
