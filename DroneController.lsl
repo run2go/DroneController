@@ -1,7 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.3.2
+// Version: 1.3.3
 
 // Configuration Parameters
 float   RATE     = 0.1;  // Tick rate for position updates
@@ -172,8 +172,8 @@ NavButton(integer n) {
         else if (nCell == 4) { stRowStatus = "> Drones Purged <"; DronePurge(); }
     } else if (nLink == 0) {
         integer nCell = NavHelper(2, 1, vTouch);
-        if      (nCell == 0) { stRowStatus = "> Rotation @"+(string)(fRot  = (vTouch.x - 0.0) / 0.5 * 25.0)+"% <"; }
-        else if (nCell == 1) { stRowStatus = "> Distance @"+(string)(fDist = (vTouch.x - 0.5) / 0.5 *  1.0)+"% <"; }
+        if      (nCell == 0) { fRot  = (vTouch.x - 0.0) / 0.5 * 25.0; stRowStatus = "> Rotation "+llGetSubString((string)(fRot/25*100), 0, 3)+"% <"; }
+        else if (nCell == 1) { fDist = (vTouch.x - 0.5) / 0.5 * 1.0;  stRowStatus = "> Distance "+llGetSubString((string)(fDist*100), 0, 3)+"% <"; }
     } bShowCounter = 1; // Start counter
 }
 default { 
