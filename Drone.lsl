@@ -1,7 +1,7 @@
 // Drone.lsl
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.1
+// Version: 1.1.1
 
 // Configuration Parameters
 float   TAU = 0.3; // Dampening in seconds
@@ -13,6 +13,7 @@ float   LIMIT = 10.0; // Max range in meters until auto return
 integer dynChannel;
 
 vector GetAgentPos(key id) { return llList2Vector(llGetObjectDetails(id, ([OBJECT_POS])), 0); }
+DroneRegister() { llRegionSay(dynChannel, (string)llGetKey()); }
 DroneChase(vector targetPos) {
     llMoveToTarget(targetPos, TAU);
     llSetTimerEvent(TIMER);
@@ -30,9 +31,6 @@ DroneCheck() {
         llSetRegionPos(vOwner + <0, 0, HEIGHT>);
         llSetStatus(STATUS_PHYSICS, TRUE);
     }
-}
-DroneRegister() {
-    llRegionSay(dynChannel, (string)llGetKey());
 }
 
 default {
