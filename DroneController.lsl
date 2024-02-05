@@ -1,7 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.3.3
+// Version: 1.3.4
 
 // Configuration Parameters
 float   RATE     = 0.1;  // Tick rate for position updates
@@ -109,7 +109,7 @@ DronePause() {
     bPausing = TRUE;
     bChase = FALSE;
     DroneCheck(FALSE);
-    HoverText(0, "");
+    //HoverText(0, "");
     TargetClear();
 }
 
@@ -134,16 +134,18 @@ HoverTextHelper() {
         bShowCounter = 0;
     } else bShowCounter++;
 }
-vector vColor = <1.0, 1.0, 1.0>;
+vector vColor;
 string stRowStatus = " ";
 HoverText(integer nMode, string stText) {
-    float  fAlpha = 1.0;
     string stRow1 = " ";
     string stRow2 = "[Drones] " + (string)nDrones;
     string br = "\n";
+    float  fAlpha = 1.0;
     
-    if (nMode == 0) stRow1 = "💤";
-    else if (nMode == 1) {
+    if (nMode == 0) {
+        stRow1 = "💤";
+        fAlpha = 0.75;
+    } else if (nMode == 1) {
         if (bPoly) stRow1 = "[State] Polygon";
         else       stRow1 = "[State] Default";
     } else if (nMode == 2) {
