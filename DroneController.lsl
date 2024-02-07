@@ -1,7 +1,7 @@
 // DroneController.lsl 
 // Author & Repository: https://github.com/run2go/DroneController
 // License: MIT
-// Version: 1.3.4
+// Version: 1.3.5
 
 // Configuration Parameters
 float   RATE     = 0.1;  // Tick rate for position updates
@@ -96,8 +96,9 @@ DroneRun() {
         } else DroneConduct(); // Idling
     } else if (!bPausing) DronePause();
     else HoverText(0, "");
-    if (nTick > (integer)(CHECK / RATE) && !bChase && !bPausing) DroneCheck(TRUE);
     if (nTick > (integer)(TIMER / RATE)) bChase = FALSE;
+    if (nTick > (integer)(CHECK / RATE) && !bChase && !bPausing) DroneCheck(TRUE);
+    else if (nTick > (integer)(CHECK / RATE) && !bChase && bPausing) DroneCheck(FALSE);
     if (bShowCounter) HoverTextHelper();
     nTick++;
 }
@@ -109,7 +110,6 @@ DronePause() {
     bPausing = TRUE;
     bChase = FALSE;
     DroneCheck(FALSE);
-    //HoverText(0, "");
     TargetClear();
 }
 
