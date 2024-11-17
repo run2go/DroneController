@@ -1,4 +1,4 @@
-![HUD](DroneControllerHUD.png)
+![HUD](https://raw.githubusercontent.com/run2go/DroneController/refs/heads/main/DroneControllerHUD.png)
 
 # DroneController
 Object Controller using LSL with RayCasting to determine Target Vectors.<br>
